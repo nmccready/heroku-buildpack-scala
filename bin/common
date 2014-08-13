@@ -7,10 +7,15 @@ detect_sbt() {
      _has_projectScalaFile $ctxDir || \
      _has_hiddenSbtDir $ctxDir || \
      _has_buildPropertiesFile $ctxDir ; then
-    return 0 
+    return 0
   else
-    return 1 
+    return 1
   fi
+}
+
+is_preBuilt() {
+  local ctxDir=$1
+  test -n "$(find $ctxDir -maxdepth 2 -name '*.zip' -print -quit)"
 }
 
 is_play() {
@@ -80,7 +85,7 @@ count_files() {
 
 detect_play_lang() {
   local appDir=$1/app
-  
+
   local num_scala_files=$(count_files ${appDir} '*.scala')
   local num_java_files=$(count_files ${appDir} '*.java')
 
@@ -91,6 +96,32 @@ detect_play_lang() {
   else
     echo ""
   fi
+}
+
+uses_universal_packaged() {
+  local ctxDir=$1
+  test -d $ctxDir/target/universal/*.zip
+}
+
+universal_packaged_default_web_proc() {
+  local ctxDir=$1
+  echo "Prebuilt process"
+  if [ $(_universal_packaging_proc_count $ctxDir) -eq 1 ]; then
+    startFile=$(_universal_packaged_procs $ctxDir)
+    echo "Prebuilt start file name: $startFile"
+    echo "web: $startFile -Dhttp.port=\$PORT \$JAVA_OPTS"
+  fi
+}
+
+_universal_packaged_procs() {
+  local ctxDir=$1
+  cd $ctxDir;
+  echo "removing target/universal/tmp"
+  rm -rf tmp;
+  echo "unzipping"
+  unzip *.zip
+  echo "Searching for executable"
+  find target/universal/*/bin -type f -executable
 }
 
 uses_universal_packaging() {

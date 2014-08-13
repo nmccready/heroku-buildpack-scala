@@ -12,10 +12,20 @@ if detect_sbt $BUILD_DIR ; then
     PLAY_2_X="Play 2.x"
     DETECTED_PLAY_LANG=$(detect_play_lang $BUILD_DIR);
     if [ $DETECTED_PLAY_LANG ] ; then
-      echo "$PLAY_2_X - $DETECTED_PLAY_LANG"
+      if is_preBuilt $BUILD_DIR ; then
+        echo "Prebuilt $PLAY_2_X - $DETECTED_PLAY_LANG"
+      else
+        echo "$PLAY_2_X - $DETECTED_PLAY_LANG"
+      fi
     else
-      echo "$PLAY_2_X"
+      if is_preBuilt $BUILD_DIR ; then
+        echo "Prebuilt $PLAY_2_X"
+      else
+        echo "$PLAY_2_X"
+      fi
     fi
+  else if is_preBuilt $BUILD_DIR ; then
+    echo "Prebuilt Scala"
   else
     echo "Scala"
   fi
